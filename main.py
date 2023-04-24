@@ -65,4 +65,4 @@ y_new = list(map(lambda x:("NSFW", float("{:.2f}".format(x[0]*100)) ) if x[0]>0.
 
 
 print("Prediction:", y_new)
-postprocess(prompt, negative_prompt, y_new, print_percentage=True)
+print(postprocess(prompt, negative_prompt, y_new, print_percentage=True))
