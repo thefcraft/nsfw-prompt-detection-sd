@@ -1,6 +1,9 @@
 # nsfw-prompt-detection-sd
 NSFW Prompt Detection for Stable Diffusion
 
+dataset:- https://huggingface.co/datasets/thefcraft/civitai-stable-diffusion-337k/tree/main
+this dataset contains 337k civitai images url with prompts etc. i use civitai api to get all prompts.
+
 Abstract: In order to ensure a safe and respectful environment for users of the Stable Diffusion platform, we developed a deep learning model to detect NSFW (not safe for work) prompts in the data. Our model is based on a convolutional neural network (CNN) that processes text inputs and outputs a probability score indicating the likelihood of the input being NSFW. The model was trained on a large dataset of annotated prompts and evaluated using standard metrics, achieving high accuracy and F1 score. We integrated the model into the Stable Diffusion platform to automatically flag and remove NSFW prompts, providing a safer and more enjoyable experience for our users.
 
 Introduction: Stable Diffusion is an online platform that allows users to generate and explore high-quality prompts for creative tasks. However, some prompts may be inappropriate or offensive, particularly those containing NSFW content such as nudity, violence, or explicit language. To address this issue, we developed a machine learning model to automatically detect and remove NSFW prompts from the data, reducing the risk of harm and promoting a positive community environment.
