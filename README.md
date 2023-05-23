@@ -13,6 +13,99 @@ Task:-
 4) add model for nsfw image detection ❌
 5) add it to pypip ❌
 
+How to use:-
+```
+import json
+import tensorflow as tf
+import numpy as np
+import random
+
+import pickle
+with open('nsfw_classifier_tokenizer.pickle', 'rb') as f:
+    tokenizer = pickle.load(f)
+
+#first method to load model
+with open('nsfw_classifier.pickle', 'rb') as f:
+    model = pickle.load(f)
+    
+#second method to load model
+from tensorflow.keras.models import load_model
+model = load_model('nsfw_classifier.h5')
+
+# Define the vocabulary size and embedding dimensions
+vocab_size = 10000
+embedding_dim = 64
+
+# Pad the prompt and negative prompt sequences
+max_sequence_length = 50
+
+import re
+def preprocess(text, isfirst = True):
+    if isfirst:
+        if type(text) == str: pass
+        elif type(text) == list:
+            output = []
+            for i in text:
+                output.append(preprocess(i))
+            return(output)
+            
+
+    text = re.sub('<.*?>', '', text)
+    text = re.sub('\(+', '(', text)
+    text = re.sub('\)+', ')', text)
+    matchs = re.findall('\(.*?\)', text)
+    
+    for _ in matchs:
+        text = text.replace(_, preprocess(_[1:-1], isfirst=False) )
+
+    text = text.replace('\n', ',').replace('|',',')
+
+    if isfirst: 
+        output = text.split(',')
+        output = list(map(lambda x: x.strip(), output))
+        output = [x for x in output if x != '']
+        return ', '.join(output)
+        # return output
+
+    return text
+
+def postprocess(prompts, negative_prompts, outputs, print_percentage = True):
+    for idx, i in enumerate(prompts):
+        print('*****************************************************************')
+        if print_percentage:
+            print(f"prompt: {i}\nnegative_prompt: {negative_prompts[idx]}\npredict: {outputs[idx][0]} --{outputs[idx][1]}%")
+        else:
+            print(f"prompt: {i}\nnegative_prompt: {negative_prompts[idx]}\npredict: {outputs[idx][0]}")
+            
+# Make predictions on new data
+prompt = ["a landscape with trees and mountains in the background", 'nude, sexy, 1girl, nsfw']
+negative_prompt = ["nsfw",                                          'worst quality']
+
+x_new = tokenizer.texts_to_sequences( preprocess(prompt) )
+z_new = tokenizer.texts_to_sequences( preprocess(negative_prompt) )
+x_new = tf.keras.preprocessing.sequence.pad_sequences(x_new, maxlen=max_sequence_length)
+z_new = tf.keras.preprocessing.sequence.pad_sequences(z_new, maxlen=max_sequence_length)
+y_new = model.predict([x_new, z_new])
+y_new = list(map(lambda x:("NSFW", float("{:.2f}".format(x[0]*100)) ) if x[0]>0.5 else ("SFW", float("{:.2f}".format(100-x[0]*100))), y_new))
+
+
+print("Prediction:", y_new)
+postprocess(prompt, negative_prompt, y_new, print_percentage=True)
+```
+output
+```
+1/1 [==============================] - 0s 66ms/step
+Prediction: [('SFW', 100.0), ('NSFW', 99.44)]
+*****************************************************************
+prompt: a landscape with trees and mountains in the background
+negative_prompt: nsfw
+predict: SFW --100.0%
+*****************************************************************
+prompt: nude, sexy, 1girl, nsfw
+negative_prompt: worst quality
+predict: NSFW --99.44%
+```
+
 Abstract: In order to ensure a safe and respectful environment for users of the Stable Diffusion platform, we developed a deep learning model to detect NSFW (not safe for work) prompts in the data. Our model is based on a convolutional neural network (CNN) that processes text inputs and outputs a probability score indicating the likelihood of the input being NSFW. The model was trained on a large dataset of annotated prompts and evaluated using standard metrics, achieving high accuracy and F1 score. We integrated the model into the Stable Diffusion platform to automatically flag and remove NSFW prompts, providing a safer and more enjoyable experience for our users.
 
 Introduction: Stable Diffusion is an online platform that allows users to generate and explore high-quality prompts for creative tasks. However, some prompts may be inappropriate or offensive, particularly those containing NSFW content such as nudity, violence, or explicit language. To address this issue, we developed a machine learning model to automatically detect and remove NSFW prompts from the data, reducing the risk of harm and promoting a positive community environment.
