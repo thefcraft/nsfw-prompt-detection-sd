@@ -14,7 +14,7 @@ Task:-
 5) add it to pypip ❌
 
 How to use:-
-```
+```python
 import json
 import tensorflow as tf
 import numpy as np
